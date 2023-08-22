@@ -20,25 +20,27 @@ int main()
 			exit(0);
 		}
 		char* each_command;
+		char *commandpointer, *tokenpointer;
 
-		each_command = strtok(input, ";&");
-		// printf("%s This is the command\n", each_command);
+
+		each_command = strtok_r(input, ";&" , &commandpointer);
+
 		while(each_command != NULL)
 		{
-			char* token = strtok(each_command, " ");
-			printf("%s This is the command\n", token);
+			char* token = strtok_r(each_command, " \t" , &tokenpointer);
+			// printf("%s This is the command\n", token);
 			char* command = token;
 			char* args[100];
 			int i = 0;
-			token = strtok(NULL, " ");
+			token = strtok_r(NULL, " \t" , &tokenpointer);
 			while(token != NULL)
 			{
 				args[i] = token;
 				i++;
-				token = strtok(NULL, " ");
+				token = strtok_r(NULL, " " , &tokenpointer);
 			}
-			each_command = strtok(NULL, ";&");
-			printf("%s\n", each_command);
+			
+			each_command = strtok_r(NULL, ";&" , &commandpointer);
 
 		}
 	}
