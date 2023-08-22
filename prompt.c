@@ -14,7 +14,7 @@ char* process_path(char* pwd, char* home_dir)
 	long long int pwd_len = strlen(pwd);
      strncpy( temp_path, pwd, home_dir_len);
 
-    printf("%s\n", pwd);
+
 	if(pwd_len < home_dir_len)
 	{
 		strcpy(processed_path, pwd); 
