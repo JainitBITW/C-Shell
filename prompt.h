@@ -1,6 +1,5 @@
 #ifndef __PROMPT_H
 #define __PROMPT_H
 
-void prompt(char* home_dir);
-
+void prompt(char *cwd, char *home_dir);
 #endif

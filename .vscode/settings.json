@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "utsname.h": "c",
+        "headers.h": "c",
+        "__locale": "c",
+        "ios": "c"
+    }
+}

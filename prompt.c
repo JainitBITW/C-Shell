@@ -47,7 +47,7 @@ char* process_path(char* pwd, char* home_dir)
     
 }
 
-void prompt(char* home_dir)
+void prompt(char* cwd , char* home_dir)
 {
 	// Getting the username :
 	char hostname[10000];
@@ -56,12 +56,10 @@ void prompt(char* home_dir)
 	assert(hostname != NULL);
 
 	// Getting the current working directory :
-	char pwd[10000];
-    memset(pwd, '\0', sizeof(pwd));
-	getcwd(pwd, sizeof(pwd));
 
-	assert(pwd != NULL);
-	char* path_name = process_path(pwd, home_dir);
+
+	assert(cwd != NULL);
+	char* path_name = process_path(cwd, home_dir);
 
 	// Getting the username :
 	char* username = getlogin();
