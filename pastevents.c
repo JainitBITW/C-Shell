@@ -2,9 +2,35 @@
 #include "pastevents.h"
 
 
+void print_pastevents(void)
+{
+    FILE* read_file = fopen("./pastevents_.txt", "r");
+    if(read_file == NULL)
+    {
+        perror("Error reading pastevents_.txt");
+        return;
+    }
+    char line[1000];
+    int command_count = 0;
+    char last_command[10000];
+    char history_commands[MAX_HISTORY+5][1000];
+    if(read_file != NULL)
+        while(fgets(line, sizeof(line), read_file))
+        {
+            strcpy(history_commands[command_count], line);
+            command_count++;
+        }
+    if(read_file != NULL)
+        fclose(read_file);
+    for(int x = 0; x < command_count; x++)
+    {
+        printf("%d. %s", x+1, history_commands[x]);
+    }
+    return;
 
+}
 
-void pastevent_purge( )
+void pastevent_purge(void)
 {
     FILE *clear_file = fopen("./pastevents_.txt", "w");
     if (clear_file == NULL)

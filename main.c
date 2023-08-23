@@ -10,7 +10,8 @@ void sigintHandler(int signum)
 	exit(signum);
 }
 
-void execute(char* command,
+void execute(char* input,
+			 char* command,
 			 char* args[],
 			 int i,
 			 char* pwd,
@@ -53,7 +54,7 @@ void execute(char* command,
 
 		int flag_a = 0, flag_b = 0;
 		char* peek_argument = calloc(1000, sizeof(char));
-		
+
 		for(int x = 0; x < i; x++)
 		{
 			char* ag = args[x];
@@ -80,23 +81,81 @@ void execute(char* command,
 		{
 			strcpy(peek_argument, ".");
 		}
-		
+
 		peek(home_dir, flag_a, flag_b, peek_argument);
-        //free(peek_argument);
-
-        
+		//free(peek_argument);
 	}
-    if (strcmp(command, "exit") ==0 )
-    {
-        // add_pastevent(command); already added for it in the main function 
-        free(previous_directory);
-        free(temp_directory);
-    
-        exit(0);
-    }
-    return ; 
-}
+	if(strcmp(command, "exit") == 0)
+	{
+		// add_pastevent(command); already added for it in the main function
+		free(previous_directory);
+		free(temp_directory);
+		printf("Exiting...\n");
 
+		exit(0);
+	}
+	if(strcmp(command, "pastevents") == 0)
+	{
+		if(i == 0)
+		{
+			print_pastevents();
+		}
+		else if(i == 1 && (strcmp(args[0], "purge") == 0))
+		{
+			pastevent_purge();
+		}
+		else if(i == 2 && (strcmp(args[0], "execute") == 0))
+		{
+			int command_number = atoi(args[1]);
+			char* command_to_be_executed = give_command(command_number);
+			if(command_to_be_executed == NULL)
+			{
+				perror("Error executing command");
+				return;
+			}
+			char *commandpointer, *tokenpointer;
+			char* each_command = strtok_r(command_to_be_executed, ";&", &commandpointer);
+			while(each_command != NULL)
+			{
+				char* token = strtok_r(each_command, " \t", &tokenpointer);
+				char* command = token;
+				char* args[100];
+				int i = 0;
+				token = strtok_r(NULL, " \t", &tokenpointer);
+				while(token != NULL)
+				{
+					args[i] = token;
+					i++;
+					token = strtok_r(NULL, " \t", &tokenpointer);
+				}
+				args[i] = NULL;
+				execute(command_to_be_executed,
+						command,
+						args,
+						i,
+						pwd,
+						home_dir,
+						previous_directory,
+						temp_directory);
+				each_command = strtok_r(NULL, ";&", &commandpointer);
+			}
+			free(command_to_be_executed);
+		}
+	}
+	return;
+}
+void handle_pastevents(char* input,
+					   char* command,
+					   char* args[],
+					   int i,
+					   char* pwd,
+					   char* home_dir,
+					   char* previous_directory,
+					   char* temp_directory)
+
+{
+	
+}
 int main()
 {
 	signal(SIGINT, sigintHandler);
@@ -119,7 +178,7 @@ int main()
 
 		if(return_value == NULL)
 		{
-			
+
 			printf("\nCtrl+C (SIGINT) received. Cleaning up and exiting...\n");
 			add_pastevent("exit");
 			exit(0);
@@ -127,7 +186,7 @@ int main()
 		char* each_command;
 		char *commandpointer, *tokenpointer;
 		input = strtok(input, "\n");
-        add_pastevent(input);
+		add_pastevent(input);
 		each_command = strtok_r(input, ";&", &commandpointer);
 
 		while(each_command != NULL)
@@ -144,7 +203,7 @@ int main()
 				token = strtok_r(NULL, " \t", &tokenpointer);
 			}
 			args[i] = NULL;
-			execute(command, args, i, pwd, home_dir, previous_directory, temp_directory);
+			execute(input, command, args, i, pwd, home_dir, previous_directory, temp_directory);
 			each_command = strtok_r(NULL, ";&", &commandpointer);
 		}
 		getcwd(pwd, sizeof(pwd));
