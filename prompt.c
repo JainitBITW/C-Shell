@@ -1,12 +1,12 @@
 #include "headers.h"
-
+#include "prompt.h"
 char* process_path(char* pwd, char* home_dir)
 {
 	char temp_path[10000];
 	memset(temp_path, '\0', sizeof(temp_path));
 	assert(temp_path != NULL);
 
-	char* processed_path = malloc(10000*sizeof(char));
+	char* processed_path = (char*)calloc(10000, sizeof(char));
     memset(processed_path, '\0', sizeof(processed_path));
     assert(processed_path != NULL);
 

@@ -3,6 +3,8 @@
         "utsname.h": "c",
         "headers.h": "c",
         "__locale": "c",
-        "ios": "c"
+        "ios": "c",
+        "stat.h": "c",
+        "errno.h": "c"
     }
 }

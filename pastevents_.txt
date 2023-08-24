@@ -1,5 +1,5 @@
-exit
-exit
-exit
-exit
-pastevents execute 2
+l
+sl
+sls
+ls
+cd

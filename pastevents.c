@@ -75,11 +75,13 @@ char*  give_command(int command_number )
 }
 
 
-void add_pastevent(char* command )
+void add_pastevent(char* command , char* home_dir  )
 {
 
-    
-    FILE *read_file = fopen("./pastevents_.txt", "r");\
+    char* path = calloc(1000, sizeof(char));
+    strcpy(path, home_dir);
+    strcat(path, "/pastevents_.txt");
+    FILE *read_file = fopen(path, "r");\
     if (read_file == NULL)
     {
         perror("Error reading pastevents_.txt");
