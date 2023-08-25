@@ -5,6 +5,8 @@
         "__locale": "c",
         "ios": "c",
         "stat.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "sstream": "c",
+        "regex": "c"
     }
 }

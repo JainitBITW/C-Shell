@@ -1,9 +1,10 @@
 #include "headers.h"
 #include "pastevents.h"
 #include "peek.h"
-
+#include "proclore.h"
 #include "prompt.h"
 #include "warp.h"
+#include "seek.h"
 struct bg_process* bg_jobs;
 bool restart_loop;
 int proc_no;
@@ -99,14 +100,99 @@ void execute(char* input,
 
 		exit(0);
 	}
+	 else if (strcmp(command, "proclore") == 0)
+    {
+        pid_t pid;
+        if (i == 0)
+        {
+            pid = getpid();
+        }
+        else if (i == 1)
+        {
+            int pid_length = strlen(args[0]);
+            for (int ab = 0; ab < pid_length; ab++)
+            {
+                if (!isdigit(args[0][ab]))
+                {
+                    printf("Pid can only have numbers.");
+                    return;
+                }
+            }
+            pid = atoi(args[0]);
+        }
+        else
+        {
+            printf("Error: Invalid number of arguments given for pinfo.\n");
+            return;
+        }
+        proclore(pid, home_dir);
+    }
+	else if (strcmp("seek",command)==0)
+	{
+		bool flag_e = false;
+		bool flag_f = false;
+		bool flag_d = false;
+	
+		char* target = calloc(1000, sizeof(char));
+		char* tofind = calloc(1000, sizeof(char));
+		bool flag_tofind = false ; 
+
+		for(int x = 0; x < i; x++)
+		{
+			char* ag = args[x];
+			if(ag[0] == '-')
+			{
+				int ag_len = strlen(ag);
+				for(int y = 1; y < ag_len; y++)
+				{
+					if(ag[y] == 'e')
+						flag_e = true;
+					else if(ag[y] == 'f')
+						flag_f = true;
+					else if(ag[y] == 'd')
+						flag_d = true;
+					else
+					{
+
+						perror("Invalid flag");
+					}
+				}
+			}
+			else if ( flag_tofind == false )
+				strcpy(tofind, args[x]);
+			else
+				strcpy(target, args[x]);
+		}
+		if(strlen(target) == 0)
+		{
+			strcpy(target, ".");
+		}
+		// puts(tofind);
+		// puts(target);
+		if ( flag_d == false && flag_f == false )
+			{
+				seek(command, i, target, true, flag_e, true, home_dir, tofind);
+				return ;
+			}
+		if( flag_d && flag_f )
+		{
+			perror("Invalid flags");
+			return;
+		}
+		seek(command, i, target, flag_f, flag_e, flag_d, home_dir, tofind);
+		return ;
+
+	}
+
 	else
 	{
 		processes(command, i, args, home_dir, false);
 	}
 
+
 	return;
 }
-void handle_pastevents(char* input,
+char*  handle_pastevents(char* input,
 					   char* command,
 					   char* args[],
 					   int i,
@@ -452,6 +538,7 @@ int main()
 			{
 				each_command = NULL;
 			}
+		
 			free(args);
 			free(command);
 			free(token);
