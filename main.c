@@ -8,14 +8,14 @@
 struct bg_process* bg_jobs;
 bool restart_loop;
 int proc_no;
-
+char* print_background;
 void sigintHandler()
 {
 	// printf("\nCtrl+C (SIGINT) received. Cleaning up and exiting...\n");
 	// add_pastevent("exit", home_dir );
 	exit(0);
 }
-int breaker =0;
+int breaker = 0;
 void execute(char* input,
 			 char* command,
 			 char* args[],
@@ -113,7 +113,7 @@ void execute(char* input,
 		}
 
 		peek(home_dir, flag_a, flag_b, peek_argument);
-		//free(peek_argument);
+		free(peek_argument);
 	}
 	else if(strcmp(command, "exit") == 0)
 	{
@@ -199,14 +199,21 @@ void execute(char* input,
 		if(flag_d == false && flag_f == false)
 		{
 			seek(command, i, target, true, flag_e, true, home_dir, tofind);
+			free(target);
+			free(tofind);
+
 			return;
 		}
 		if(flag_d && flag_f)
 		{
 			perror("Invalid flags");
+			free(target);
+			free(tofind);
 			return;
 		}
 		seek(command, i, target, flag_f, flag_e, flag_d, home_dir, tofind);
+		free(target);
+		free(tofind);
 		return;
 	}
 
@@ -217,7 +224,6 @@ void execute(char* input,
 
 	return;
 }
-
 
 void processes(char* command, int i, char** args, char* home_dir, bool background_process)
 {
@@ -258,7 +264,8 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 
 	int pid = fork();
 	if(pid < 0)
-	{   breaker = 1;
+	{
+		breaker = 1;
 		perror("Error running process");
 		return;
 	}
@@ -281,9 +288,14 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 				if(cd_status < 0)
 				{
 					perror("Error in changing directory");
-					puts(exec_arguments[i]);
+					// puts(exec_arguments[i]);
+					for (int y = 0; y < i + 1; y++)
+						free(exec_arguments[y]);
+					
 					return;
 				}
+				for (int y = 0; y < i + 1; y++)
+					free(exec_arguments[y]);
 			}
 			return;
 		}
@@ -402,9 +414,8 @@ void finish_proc()
 int main()
 {
 	proc_no = 0;
-	signal(SIGINT, sigintHandler);
 	signal(SIGCHLD, finish_proc);
-
+	// print_background = calloc(1000, sizeof(char));
 	bg_jobs = (struct bg_process*)calloc(100, sizeof(struct bg_process));
 	char home_dir[10000], pwd[10000];
 	char* previous_directory = calloc(10000, sizeof(char));
@@ -420,6 +431,7 @@ int main()
 		prompt(pwd, home_dir);
 		// setbuf(stdout, NULL);
 		char* input = calloc(4096, sizeof(char));
+		signal(SIGINT, sigintHandler);
 		char* return_value = fgets(input, 4096, stdin);
 
 		int flag_pee = 0;
@@ -491,12 +503,12 @@ int main()
 				{
 					if(!strcmp("execute", args[0]))
 					{
-						
+
 						int command_number = atoi(args[1]);
-						if (command_number == 0)
+						if(command_number == 0)
 						{
 							perror("Invalid command number");
-							breaker =1 ;
+							breaker = 1;
 							break;
 						}
 						char* command_to_be_executed = give_command(command_number, home_dir);
@@ -504,7 +516,7 @@ int main()
 							calloc(strlen(command_to_be_executed) + 10, sizeof(char));
 						strcpy(copy_command_to_be_executed, command_to_be_executed);
 						// strcpy(copy_command_to_be_executed, command_to_be_executed);
-						printf("command to be executed is %s\n", command_to_be_executed);
+						// printf("command to be executed is %s\n", command_to_be_executed);
 						if(command_to_be_executed == NULL)
 						{
 							perror("Error executing command");
@@ -548,8 +560,8 @@ int main()
 						}
 						// printf("%s\n", copy_command_to_be_executed);
 						strcat(input1, copy_command_to_be_executed);
-						printf("command to be executed is %s\n", copy_command_to_be_executed);
-						printf("input 1 is %s\n", input1);
+						// printf("command to be executed is %s\n", copy_command_to_be_executed);
+						// printf("input 1 is %s\n", input1);
 						free(command_to_be_executed);
 						free(copy_command_to_be_executed);
 						flag_pe = 1;
@@ -565,7 +577,7 @@ int main()
 			else
 			{
 				execute(input, command, args, i, pwd, home_dir, previous_directory, temp_directory);
-				if (breaker == 1)
+				if(breaker == 1)
 					break;
 			}
 			if(flag_pe == 1)
@@ -614,6 +626,10 @@ int main()
 		}
 		free(input1);
 	}
+	free(temp_directory);
+	free(bg_jobs);
+	free(print_background);
+	
 	free(previous_directory);
 
 	return 0;

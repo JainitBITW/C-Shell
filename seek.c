@@ -11,10 +11,10 @@ void travel_recursive(char* tofind,
 					  int* result_count)
 {
 
-		printf("target is %s\n", target);
-		printf("tofind is %s\n", tofind);
-	    printf("current path is %s\n", current_path);
-	printf("target is %d %d \n", (int)flag_f , (int)flag_d );
+	// 	printf("target is %s\n", target);
+	// 	printf("tofind is %s\n", tofind);
+	//     printf("current path is %s\n", current_path);
+	// printf("target is %d %d \n", (int)flag_f , (int)flag_d );
 
 	char** curr_folders = calloc(1000, sizeof(char*));
 	for(int i = 0; i < 1000; i++)
@@ -252,7 +252,6 @@ void seek(char* command,
 			return;
 		}
 
-	
 		if(stat_return != 0)
 		{
 			perror("Cannot open directory or file");
@@ -274,16 +273,33 @@ void seek(char* command,
 		return;
 	}
 
-	for(int i = 0; i < result_count; i++)
-	{
-		if(strlen(results[i]) != 0)
-			printf("%s\n", results[i]);
-		//     else
-		//     // { cout<<1
-		//         // break;}
-		//         int zz =0;
-		// }
-	}
+	for (int i = 0; i < result_count; i++) {
+        if (strlen(results[i]) != 0) {
+            char* new_path = calloc(1000, sizeof(char));
+            if (new_path == NULL) {
+                perror("Memory allocation error");
+                return;
+            }
+
+            strcpy(new_path, target);
+            strcat(new_path, results[i] + 1);
+
+            struct stat stats;
+            int stat_return = stat(new_path, &stats);
+            
+            if (stat_return == 0) {
+                if (S_ISDIR(stats.st_mode)) {
+                    printf("\033[1;34m%s\033[0m\n", results[i]); // Print blue
+                } else {
+                    printf("\033[1;32m%s\033[0m\n", results[i]); // Print green
+                }
+            } else {
+                perror("Error getting file/directory info");
+            }
+            
+            free(new_path);
+        }
+    }
 	free(results);
 	free(curent_path);
 }

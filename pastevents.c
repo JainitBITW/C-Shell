@@ -24,10 +24,11 @@ void print_pastevents(char* home_dir)
 		}
 	if(read_file != NULL)
 		fclose(read_file);
-	for(int x = 0; x < command_count; x++)
-	{
-		printf("%d. %s", x + 1, history_commands[x]);
-	}
+	//print in reverse order
+    for(int x = command_count - 1; x >= 0; x--)
+    {
+        printf("%s", history_commands[x]);
+    }
 	return;
 }
 
