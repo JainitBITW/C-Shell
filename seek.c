@@ -11,10 +11,10 @@ void travel_recursive(char* tofind,
 					  int* result_count)
 {
 
-	// 	printf("target is %s\n", target);
-	// 	printf("tofind is %s\n", tofind);
-	//     printf("current path is %s\n", current_path);
-	// printf("target is %d %d \n", (int)flag_f , (int)flag_d );
+		printf("target is %s\n", target);
+		printf("tofind is %s\n", tofind);
+	    printf("current path is %s\n", current_path);
+	printf("target is %d %d \n", (int)flag_f , (int)flag_d );
 
 	char** curr_folders = calloc(1000, sizeof(char*));
 	for(int i = 0; i < 1000; i++)

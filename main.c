@@ -3,8 +3,8 @@
 #include "peek.h"
 #include "proclore.h"
 #include "prompt.h"
-#include "warp.h"
 #include "seek.h"
+#include "warp.h"
 struct bg_process* bg_jobs;
 bool restart_loop;
 int proc_no;
@@ -15,7 +15,7 @@ void sigintHandler()
 	// add_pastevent("exit", home_dir );
 	exit(0);
 }
-
+int breaker =0;
 void execute(char* input,
 			 char* command,
 			 char* args[],
@@ -25,6 +25,30 @@ void execute(char* input,
 			 char* previous_directory,
 			 char* temp_directory)
 {
+	int flag = 0;
+
+	if(i == 0 && command[strlen(command) - 1] == '&')
+	{
+		flag = 1;
+		command[strlen(command) - 1] = '\0';
+	}
+	else if(i != 0 && args[i - 1][strlen(args[i - 1]) - 1] == '&')
+	{
+		flag = 1;
+		args[i - 1][strlen(args[i - 1]) - 1] = '\0';
+		if(args[i - 1][0] == '\0')
+		{
+			args[i - 1] = NULL;
+			i--;
+		}
+	}
+
+	if(flag)
+	{
+		processes(command, i, args, home_dir, true);
+
+		return;
+	}
 
 	if(strcmp(command, "warp") == 0)
 	{
@@ -100,42 +124,42 @@ void execute(char* input,
 
 		exit(0);
 	}
-	 else if (strcmp(command, "proclore") == 0)
-    {
-        pid_t pid;
-        if (i == 0)
-        {
-            pid = getpid();
-        }
-        else if (i == 1)
-        {
-            int pid_length = strlen(args[0]);
-            for (int ab = 0; ab < pid_length; ab++)
-            {
-                if (!isdigit(args[0][ab]))
-                {
-                    printf("Pid can only have numbers.");
-                    return;
-                }
-            }
-            pid = atoi(args[0]);
-        }
-        else
-        {
-            printf("Error: Invalid number of arguments given for pinfo.\n");
-            return;
-        }
-        proclore(pid, home_dir);
-    }
-	else if (strcmp("seek",command)==0)
+	else if(strcmp(command, "proclore") == 0)
+	{
+		pid_t pid;
+		if(i == 0)
+		{
+			pid = getpid();
+		}
+		else if(i == 1)
+		{
+			int pid_length = strlen(args[0]);
+			for(int ab = 0; ab < pid_length; ab++)
+			{
+				if(!isdigit(args[0][ab]))
+				{
+					printf("Pid can only have numbers.");
+					return;
+				}
+			}
+			pid = atoi(args[0]);
+		}
+		else
+		{
+			printf("Error: Invalid number of arguments given for pinfo.\n");
+			return;
+		}
+		proclore(pid, home_dir);
+	}
+	else if(strcmp("seek", command) == 0)
 	{
 		bool flag_e = false;
 		bool flag_f = false;
 		bool flag_d = false;
-	
+
 		char* target = calloc(1000, sizeof(char));
 		char* tofind = calloc(1000, sizeof(char));
-		bool flag_tofind = false ; 
+		bool flag_tofind = false;
 
 		for(int x = 0; x < i; x++)
 		{
@@ -158,8 +182,11 @@ void execute(char* input,
 					}
 				}
 			}
-			else if ( flag_tofind == false )
+			else if(flag_tofind == false)
+			{
 				strcpy(tofind, args[x]);
+				flag_tofind = true;
+			}
 			else
 				strcpy(target, args[x]);
 		}
@@ -169,19 +196,18 @@ void execute(char* input,
 		}
 		// puts(tofind);
 		// puts(target);
-		if ( flag_d == false && flag_f == false )
-			{
-				seek(command, i, target, true, flag_e, true, home_dir, tofind);
-				return ;
-			}
-		if( flag_d && flag_f )
+		if(flag_d == false && flag_f == false)
+		{
+			seek(command, i, target, true, flag_e, true, home_dir, tofind);
+			return;
+		}
+		if(flag_d && flag_f)
 		{
 			perror("Invalid flags");
 			return;
 		}
 		seek(command, i, target, flag_f, flag_e, flag_d, home_dir, tofind);
-		return ;
-
+		return;
 	}
 
 	else
@@ -189,68 +215,9 @@ void execute(char* input,
 		processes(command, i, args, home_dir, false);
 	}
 
-
 	return;
 }
-char*  handle_pastevents(char* input,
-					   char* command,
-					   char* args[],
-					   int i,
-					   char* pwd,
-					   char* home_dir,
-					   char* previous_directory,
-					   char* temp_directory)
 
-{
-	if(strcmp(command, "pastevents") == 0)
-	{
-		if(i == 0)
-		{
-			print_pastevents();
-		}
-		else if(i == 1 && (strcmp(args[0], "purge") == 0))
-		{
-			pastevent_purge();
-		}
-		else if(i == 2 && (strcmp(args[0], "execute") == 0))
-		{
-			int command_number = atoi(args[1]);
-			char* command_to_be_executed = give_command(command_number);
-			if(command_to_be_executed == NULL)
-			{
-				perror("Error executing command");
-				return;
-			}
-			char *commandpointer, *tokenpointer;
-			char* each_command = strtok_r(command_to_be_executed, ";&", &commandpointer);
-			while(each_command != NULL)
-			{
-				char* token = strtok_r(each_command, " \t", &tokenpointer);
-				char* command = token;
-				char* args[100];
-				int i = 0;
-				token = strtok_r(NULL, " \t", &tokenpointer);
-				while(token != NULL)
-				{
-					args[i] = token;
-					i++;
-					token = strtok_r(NULL, " \t", &tokenpointer);
-				}
-				args[i] = NULL;
-				execute(command_to_be_executed,
-						command,
-						args,
-						i,
-						pwd,
-						home_dir,
-						previous_directory,
-						temp_directory);
-				each_command = strtok_r(NULL, ";&", &commandpointer);
-			}
-			free(command_to_be_executed);
-		}
-	}
-}
 
 void processes(char* command, int i, char** args, char* home_dir, bool background_process)
 {
@@ -291,7 +258,7 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 
 	int pid = fork();
 	if(pid < 0)
-	{
+	{   breaker = 1;
 		perror("Error running process");
 		return;
 	}
@@ -314,6 +281,7 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 				if(cd_status < 0)
 				{
 					perror("Error in changing directory");
+					puts(exec_arguments[i]);
 					return;
 				}
 			}
@@ -326,7 +294,8 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 			if(exec_return < 0)
 			{
 				perror("Error in process");
-				printf("%s\n", exec_arguments[0]);
+				breaker = 1;
+				// printf("%s\n", exec_arguments[0]);
 				int kill_stats = kill(getpid(), SIGTERM);
 				if(kill_stats < 0)
 					kill(getpid(), SIGKILL);
@@ -358,6 +327,7 @@ void processes(char* command, int i, char** args, char* home_dir, bool backgroun
 			{
 				perror("Error turning the process into a foreground one.");
 				int k_stat = kill(getpid(), SIGTERM);
+				breaker = 1;
 				if(k_stat < 0)
 					kill(getpid(), SIGKILL);
 			}
@@ -435,7 +405,7 @@ int main()
 	signal(SIGINT, sigintHandler);
 	signal(SIGCHLD, finish_proc);
 
-	bg_jobs = (struct bg_process*)calloc(100 ,  sizeof(struct bg_process));
+	bg_jobs = (struct bg_process*)calloc(100, sizeof(struct bg_process));
 	char home_dir[10000], pwd[10000];
 	char* previous_directory = calloc(10000, sizeof(char));
 	char* temp_directory = calloc(10000, sizeof(char));
@@ -451,7 +421,11 @@ int main()
 		// setbuf(stdout, NULL);
 		char* input = calloc(4096, sizeof(char));
 		char* return_value = fgets(input, 4096, stdin);
-		
+
+		int flag_pee = 0;
+		int flag_pp = 0;
+		char* input1 = calloc(4096, sizeof(char));
+
 		if(return_value == NULL || feof(stdin))
 		{
 
@@ -460,21 +434,23 @@ int main()
 			exit(0);
 		}
 		input = strtok(input, "\n");
-		if(input == NULL)
+		if(input == NULL || strlen(input) == 0)
 			continue;
 		char* each_command;
 		char *commandpointer, *tokenpointer;
 
-		add_pastevent(input, home_dir);
 		int flag = 0;
 		each_command = strtok_r(input, ";", &commandpointer);
 		if(each_command == NULL)
 			continue;
-
+		breaker = 0;
 		while(each_command != NULL)
 		{
+			char* copy_each_command = calloc(strlen(each_command) + 10, sizeof(char));
+			strcpy(copy_each_command, each_command);
+			int flag_pe = 0;
 			char* token = strtok_r(each_command, " \t\n", &tokenpointer);
-			if(token == NULL)
+			if(token == NULL || strlen(token) == 0)
 			{
 				each_command = strtok_r(NULL, ";", &commandpointer);
 				continue;
@@ -495,56 +471,148 @@ int main()
 			args[i] = NULL;
 			int flag = 0;
 			//checking for background processes
-			if(i == 0 && command[strlen(command) - 1] == '&')
-			{
-				flag = 1;
-				command[strlen(command) - 1] = '\0';
-			}
-			else if(i != 0 && args[i - 1][strlen(args[i - 1]) - 1] == '&')
-			{
-				flag = 1;
-				args[i - 1][strlen(args[i - 1]) - 1] = '\0';
-				if(args[i - 1][0] == '\0')
-				{
-					args[i - 1] = NULL;
-					i--;
-				}
-			}
-
-			if(flag)
-			{
-				processes(command, i, args, home_dir, true);
-				each_command = strtok_r(NULL, ";", &commandpointer);
-				free(args);
-				free(command);
-				free(token);
-
-				continue;
-			}
 
 			if(!strcmp(command, "pastevents"))
 			{
-				// handle_pastevents(
-				// 	input, command, args, i, pwd, home_dir, previous_directory, temp_directory);
-				int zz = 0;
+				if(i == 0)
+				{
+					print_pastevents(home_dir);
+					flag_pe = 1;
+				}
+				else if(i == 1)
+				{
+					if(!strcmp("purge", args[0]))
+					{
+						pastevent_purge(home_dir);
+						flag_pp = 1;
+					}
+				}
+				else if(i == 2)
+				{
+					if(!strcmp("execute", args[0]))
+					{
+						
+						int command_number = atoi(args[1]);
+						if (command_number == 0)
+						{
+							perror("Invalid command number");
+							breaker =1 ;
+							break;
+						}
+						char* command_to_be_executed = give_command(command_number, home_dir);
+						char* copy_command_to_be_executed =
+							calloc(strlen(command_to_be_executed) + 10, sizeof(char));
+						strcpy(copy_command_to_be_executed, command_to_be_executed);
+						// strcpy(copy_command_to_be_executed, command_to_be_executed);
+						printf("command to be executed is %s\n", command_to_be_executed);
+						if(command_to_be_executed == NULL)
+						{
+							perror("Error executing command");
+							breaker = 1;
+							break;
+						}
+
+						char *commandpointer1, *tokenpointer1;
+						char* each_command1 =
+							strtok_r(command_to_be_executed, ";", &commandpointer1);
+						while(each_command1 != NULL)
+						{
+							char* token1 = strtok_r(each_command1, " \t", &tokenpointer1);
+							char* command1 = (char*)calloc(strlen(token1) + 10, sizeof(char));
+							strcpy(command1, token1);
+							char** args1 = (char**)calloc(100, sizeof(char*));
+
+							int i1 = 0;
+							token1 = strtok_r(NULL, " \t", &tokenpointer1);
+							while(token1 != NULL)
+							{
+								args1[i1] = (char*)calloc(strlen(token1) + 10, sizeof(char));
+								strcpy(args1[i1], token1);
+								i1++;
+								token1 = strtok_r(NULL, " \t", &tokenpointer1);
+							}
+							args1[i1] = NULL;
+							execute(copy_command_to_be_executed,
+									command1,
+									args1,
+									i1,
+									pwd,
+									home_dir,
+									previous_directory,
+									temp_directory);
+							each_command1 = strtok_r(NULL, ";", &commandpointer1);
+						}
+						if(strlen(input1) != 0)
+						{
+							strcat(input1, ";");
+						}
+						// printf("%s\n", copy_command_to_be_executed);
+						strcat(input1, copy_command_to_be_executed);
+						printf("command to be executed is %s\n", copy_command_to_be_executed);
+						printf("input 1 is %s\n", input1);
+						free(command_to_be_executed);
+						free(copy_command_to_be_executed);
+						flag_pe = 1;
+					}
+				}
+				else
+				{
+					perror("Invalid number of arguments");
+					breaker = 1;
+					break;
+				}
 			}
 			else
 			{
 				execute(input, command, args, i, pwd, home_dir, previous_directory, temp_directory);
+				if (breaker == 1)
+					break;
 			}
+			if(flag_pe == 1)
+			{
+				if(commandpointer != NULL)
+					each_command = strtok_r(NULL, ";", &commandpointer);
+				else
+				{
+					each_command = NULL;
+				}
+				free(args);
+				free(command);
+				free(token);
+				continue;
+			}
+			if(strlen(input1) != 0)
+				strcat(input1, ";");
+			strcat(input1, copy_each_command);
+
 			if(commandpointer != NULL)
 				each_command = strtok_r(NULL, ";", &commandpointer);
 			else
 			{
 				each_command = NULL;
 			}
-		
+
 			free(args);
 			free(command);
+			free(copy_each_command);
 			free(token);
 		}
+
 		getcwd(pwd, sizeof(pwd));
 		free(input);
+		if(breaker == 1)
+			continue;
+		if(flag_pee || flag_pp)
+		{
+			free(input1);
+			continue;
+		}
+		else
+		{
+			if(strlen(input1) != 0)
+				add_pastevent(input1, home_dir);
+		}
+		free(input1);
 	}
 	free(previous_directory);
 

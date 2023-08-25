@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <ctype.h>
 #include <pwd.h>
 #include <dirent.h>
 #include <grp.h>
@@ -25,11 +26,12 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-#define MAX_HISTORY 5
+#define MAX_HISTORY 10
 struct bg_process
 {
     char **agrv;
     pid_t pid;
     int number_of_args;
 };
+void processes(char* command, int i, char** args, char* home_dir, bool background_process);
 #endif

@@ -1,5 +1,0 @@
-seek jainit1111
-seek -f jainit1111
-seek jainit
-seek  -f jainit1111
-seek -e jainit1111
